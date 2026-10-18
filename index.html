@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enochian - A Symbolic Representation of the Universe</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Leaflet CSS for World Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- MapLibre GL (renders OpenFreeMap vector tiles) -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#0B0E14',
+                        slatePanel: '#151B26',
+                        solarGold: '#D4AF37',
+                        enochianCrimson: '#C93B2B',
+                        aethyrSapphire: '#2A6F97',
+                        spiritusEmerald: '#2D6A4F'
+                    },
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom UI aesthetics and scrollbars */
+        body {
+            background-color: #0B0E14;
+            color: #E0E0E0;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0B0E14;
+            border-left: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(42, 111, 151, 0.5);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(212, 175, 55, 0.8);
+        }
+
+        .glow-gold {
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .glow-sapphire {
+            box-shadow: 0 0 20px rgba(42, 111, 151, 0.2);
+        }
+
+        .panel-bg {
+            background: linear-gradient(135deg, rgba(21, 27, 38, 0.95) 0%, rgba(11, 14, 20, 0.98) 100%);
+        }
+
+        /* Enochian vector script transition */
+        .enochian-glyph {
+            transition: all 0.3s ease;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .enochian-glyph:hover {
+            stroke: #D4AF37;
+            filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.8));
+        }
+
+        .tab-btn.active {
+            background: rgba(212, 175, 55, 0.1);
+            border-right: 3px solid #D4AF37;
+            color: #D4AF37;
+        }
+
+        /* Each font lists the correct .ttf first, then your original (.tttf) filename as a fallback */
+        @font-face {
+            font-family: 'Enochian';
+            src: url('deenoch.ttf') format('truetype'), url('deenoch.tttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Astro';
+            src: url('ASTRO.ttf') format('truetype'), url('ASTRO.TTTF') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Kartka';
+            src: url('kartka.ttf') format('truetype'), url('kartka.tttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Beaulieux';
+            src: url('t4cbeaulieux.ttf') format('truetype'), url('t4cbeaulieux.tttf') format('truetype');
+        }
+
+        .font-enochian {
+            font-family: 'Enochian', sans-serif;
+        }
+
+        .font-astro {
+            font-family: 'Astro', sans-serif;
+        }
+
+        .font-kartka {
+            font-family: 'Kartka', serif;
+        }
+
+        .font-beaulieux {
+            font-family: 'Beaulieux', serif;
+        }
+
+        /* Audio & Font toggle styling */
+        .toggle-knob {
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .audio-active .toggle-knob,
+        .font-active .toggle-knob {
+            transform: translateX(20px);
+            background-color: #D4AF37;
+        }
+
+        .audio-active,
+        .font-active {
+            border-color: #D4AF37;
+        }
+
+        /* Great Table grids */
+        .gt-wrap {
+            container-type: inline-size;
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .gt-grid {
+            display: grid;
+            grid-template-columns: 12fr 1fr 12fr;
+            background: #fff;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .gt-quad {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(13, 1fr);
+            aspect-ratio: 12 / 13;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        .gt-quad:hover {
+            filter: brightness(1.15);
+        }
+
+        .gt-quad.selected {
+            box-shadow: inset 0 0 0 3px #D4AF37;
+        }
+
+        .gt-cross {
+            display: grid;
+            grid-template-rows: repeat(13, 1fr);
+            background: #fff;
+            color: #111;
+        }
+
+        .gt-bar {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(25, 1fr);
+            background: #fff;
+            color: #111;
+        }
+
+        .gt-bar .gt-cell {
+            aspect-ratio: 1 / 1;
+        }
+
+        .gt-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 2.3cqw;
+            line-height: 1;
+        }
+
+        .gt-cell.enoch {
+            font-family: 'Enochian', sans-serif;
+            font-weight: 400;
+            font-size: 3.3cqw;
+        }
+
+        .symbol-font {
+            font-family: 'Segoe UI Symbol', 'Noto Sans Symbols', 'Noto Sans Symbols 2', 'Apple Symbols', 'DejaVu Sans', sans-serif;
+        }
+
+        /* Floating Sigillum */
+        @keyframes sigil-float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-1deg);
+                filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.25));
+            }
+
+            50% {
+                transform: translateY(-16px) rotate(1deg);
+                filter: drop-shadow(0 0 26px rgba(212, 175, 55, 0.55));
+            }
+        }
+
+        @keyframes sigil-shadow {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.35;
+            }
+
+            50% {
+                transform: scale(0.8);
+                opacity: 0.15;
+            }
+        }
+
+        .sigil-float {
+            animation: sigil-float 6s ease-in-out infinite;
+        }
+
+        .sigil-shadow {
+            animation: sigil-shadow 6s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .sigil-float,
+            .sigil-shadow {
+                animation: none;
+            }
+        }
+
+        /* Interactive grid squares */
+        .tablet-cell {
+            transition: all 0.2s;
+            cursor: crosshair;
+        }
+
+        .tablet-cell:hover {
+            background: rgba(212, 175, 55, 0.15);
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 10px #D4AF37;
+            border-radius: 2px;
+        }
+
+        /* Map and Autocomplete Styling */
+        #map-container {
+            height: 100%;
+            width: 100%;
+            border-radius: 0.5rem;
+            z-index: 1;
+        }
+
+        /* Dark mode map tiles (CSS filter approach) */
+        .maplibregl-canvas,
+        .leaflet-control-zoom-in,
+        .leaflet-control-zoom-out,
+        .leaflet-control-attribution {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #151B26;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 50;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        .autocomplete-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            color: #E0E0E0;
+            font-size: 0.875rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .autocomplete-item:hover {
+            background: rgba(212, 175, 55, 0.15);
+            color: #D4AF37;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Leaflet custom marker popup styling */
+        .leaflet-popup-content-wrapper {
+            background: #151B26;
+            color: #E0E0E0;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 4px;
+        }
+
+        .leaflet-popup-tip {
+            background: #151B26;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+    </style>
+</head>
+
+<body class="flex h-screen w-full selection:bg-[#2A6F97] selection:text-white">
+
+    <aside
+        class="w-20 md:w-64 bg-slatePanel border-r border-solarGold/20 flex flex-col z-20 shadow-[5px_0_25px_rgba(0,0,0,0.8)] transition-all duration-300 flex-shrink-0">
+        <div class="p-4 md:p-6 border-b border-solarGold/10 flex justify-center items-center flex-col">
+            <svg viewBox="-50 -50 100 100"
+                class="w-10 h-10 md:w-16 md:h-16 stroke-solarGold fill-transparent mb-2 md:mb-4 animate-pulse-slow">
+                <circle cx="0" cy="0" r="45" stroke-width="1.5" />
+                <polygon points="0,-40 38,25 -38,25" stroke-width="1" />
+                <polygon points="0,40 -38,-25 38,-25" stroke-width="1" />
+                <circle cx="0" cy="0" r="10" stroke-width="1" />
+            </svg>
+            <h1
+                class="hidden md:block font-serif text-2xl tracking-[0.2em] text-solarGold text-center uppercase glow-gold">
+                Enochian</h1>
+            <div
+                class="hidden md:block text-[0.6rem] tracking-[0.3em] text-aethyrSapphire uppercase mt-2 text-center opacity-80">
+                A Symbolic Representation</div>
+        </div>
+
+        <nav class="flex-1 py-4 space-y-1 overflow-y-auto" id="main-nav">
+            <!-- Injected via JS -->
+        </nav>
+
+        <div class="p-4 border-t border-solarGold/10 flex flex-col md:flex-row justify-between items-center gap-2 cursor-pointer"
+            id="toggle-font-btn">
+            <span
+                class="text-[0.65rem] md:text-xs text-gray-400 font-serif tracking-wider uppercase hidden md:inline">Enochian
+                Script</span>
+            <svg class="w-5 h-5 md:hidden stroke-gray-400 fill-none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 12h18M3 20h18">
+                </path>
+            </svg>
+            <div id="font-toggle"
+                class="w-10 h-5 bg-obsidian rounded-full relative border border-gray-600 transition-colors font-active">
+                <div class="toggle-knob w-4 h-4 bg-gray-500 rounded-full absolute left-0.5 top-0.5"></div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-solarGold/10 flex flex-col md:flex-row justify-between items-center gap-2 cursor-pointer"
+            id="toggle-audio-btn">
+            <span
+                class="text-[0.65rem] md:text-xs text-gray-400 font-serif tracking-wider uppercase hidden md:inline">Harmonic
+                Resonance</span>
+            <svg class="w-5 h-5 md:hidden stroke-gray-400 fill-none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5 10v4a2 2 0 002 2h2.586l3.707 3.707a1 1 0 001.707-.707V5.414a1 1 0 00-1.707-.707L9.586 8H7a2 2 0 00-2 2z">
+                </path>
+            </svg>
+            <div id="audio-toggle"
+                class="w-10 h-5 bg-obsidian rounded-full relative border border-gray-600 transition-colors">
+                <div class="toggle-knob w-4 h-4 bg-gray-500 rounded-full absolute left-0.5 top-0.5"></div>
+            </div>
+        </div>
+
+        <a href="https://michaelwenas.biz.id" target="_blank" rel="noopener noreferrer"
+            class="p-4 border-t border-solarGold/10 flex flex-col items-center justify-center gap-1 text-center hover:bg-white/5 transition-colors"
+            title="Created by Michael W.P. Wenas - michaelwenas.biz.id">
+            <svg class="w-5 h-5 md:hidden stroke-gray-400 fill-none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" stroke-width="1.5"></circle>
+                <path stroke-width="1.5" d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"></path>
+            </svg>
+            <span class="hidden md:block text-[9px] tracking-[0.25em] text-gray-500 uppercase">Created by</span>
+            <span class="hidden md:block font-serif text-xs tracking-widest text-solarGold">Michael W.P. Wenas</span>
+            <span class="hidden md:block text-[10px] tracking-wider text-aethyrSapphire">michaelwenas.biz.id</span>
+        </a>
+    </aside>
+
+    <main class="flex-1 relative overflow-y-auto overflow-x-hidden p-4 md:p-8" id="main-container">
+        <!-- Dynamic Tab Content renders here -->
+    </main>
+
+    <!-- Leaflet JS for World Map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- MapLibre GL + Leaflet bridge for OpenFreeMap -->
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
+
+    <!-- External data files -->
+    <script src="enochian-data.js"></script>
+    <script src="enochian-calls.js"></script>
+    <script src="enochian-tables.js"></script>
+    <script src="enochian-worldmap.js"></script>
+
+    <script>
+        let parsedTablets = [];
+        let dictionaryDB = [];
+        let enochianCalls = [];
+        let tablesData = null;
+        let leafletMap = null;
+        let mapMarkers = [];
+
+        const gematriaValues = {
+            'a': 6, 'b': 5, 'c': 300, 'k': 300, 'd': 4, 'e': 5, 'f': 8, 'g': 3,
+            'h': 5, 'i': 60, 'y': 60, 'j': 60, 'l': 30, 'm': 40, 'n': 50, 'o': 70,
+            'p': 8, 'q': 100, 'r': 200, 's': 9, 't': 9, 'u': 70, 'v': 70, 'w': 70,
+            'x': 400, 'z': 7
+        };
+
+        function calculateGematria(str) {
+            let total = 0;
+            const s = str.toLowerCase();
+            for (let i = 0; i < s.length; i++) {
+                total += gematriaValues[s[i]] || 0;
+            }
+            return total;
+        }
+
+        const ELEMENT_NAMES = { air: 'Air', water: 'Water', earth: 'Earth', fire: 'Fire' };
+        const QUAD_DIRECTIONS = { tl: 'NW', tr: 'NE', bl: 'SW', br: 'SE' };
+
+        class EnochianAudio {
+            constructor() {
+                this.ctx = null;
+                this.enabled = false;
+                this.drone = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            }
+
+            toggle() {
+                this.enabled = !this.enabled;
+                if (this.enabled) this.init();
+                return this.enabled;
+            }
+
+            playClick() {
+                if (!this.enabled || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+
+            playWhoosh() {
+                if (!this.enabled || !this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * 1.5;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(50, this.ctx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.5);
+                filter.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 1.5);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.3, this.ctx.currentTime + 0.3);
+                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.5);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+            }
+        }
+
+        const audioEngine = new EnochianAudio();
+
+        class EnochianSpeech {
+            constructor() {
+                this.supported = 'speechSynthesis' in window;
+                this.speaking = false;
+                this.voice = null;
+                this.token = 0;
+                if (this.supported) {
+                    this.pickVoice();
+                    window.speechSynthesis.addEventListener('voiceschanged', () => this.pickVoice());
+                }
+            }
+
+            pickVoice() {
+                const voices = window.speechSynthesis.getVoices();
+                const gb = voices.filter(v => v.lang.replace('_', '-').toLowerCase() === 'en-gb');
+                const preferred = /Daniel|UK English Male|Arthur|Oliver|Serena|Martha|UK English Female|Kate/i;
+                this.voice = gb.find(v => preferred.test(v.name)) || gb[0] || null;
+            }
+
+            clean(text) {
+                return text.replace(/\b[A-Z]{2,}\b/g, w => w[0] + w.slice(1).toLowerCase());
+            }
+
+            speak(text, onEnd) {
+                if (!this.supported) return;
+                this.stop();
+                const myToken = ++this.token;
+                const chunks = this.clean(text).match(/[^.!?]+[.!?]+["')]*|[^.!?]+$/g) || [text];
+                this.speaking = true;
+                chunks.forEach((chunk, i) => {
+                    const u = new SpeechSynthesisUtterance(chunk.trim());
+                    u.lang = 'en-GB';
+                    if (this.voice) u.voice = this.voice;
+                    u.rate = 0.9;
+                    u.pitch = 0.95;
+                    const finish = () => {
+                        if (myToken !== this.token) return;
+                        this.speaking = false;
+                        if (onEnd) onEnd();
+                    };
+                    if (i === chunks.length - 1) { u.onend = finish; u.onerror = finish; }
+                    window.speechSynthesis.speak(u);
+                });
+            }
+
+            stop() {
+                if (!this.supported) return;
+                this.token++;
+                this.speaking = false;
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        const speech = new EnochianSpeech();
+
+        const App = {
+            state: {
+                currentTab: 'calls', currentCallId: 1, currentTablet: 0, useEnochianFont: true,
+                tableVariant: 'recensa', selectedQuadrant: 'tl',
+                tabletsView: 'creation', lamenView: 'heptarchic', currentPlanet: 'venus'
+            },
+            tabs: [
+                { id: 'calls', label: 'Enochian Calls', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+                { id: 'map', label: 'World Map', icon: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+                { id: 'table', label: 'Great Table', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
+                { id: 'tablets', label: 'VII Tablets', icon: 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z' },
+                { id: 'lamen', label: 'Lamen', icon: 'M12 3l9 9-9 9-9-9 9-9zM12 8l4 4-4 4-4-4 4-4z' },
+                { id: 'ensign', label: 'Ensign', icon: 'M5 3v18M5 4h12l-2 4 2 4H5' },
+                { id: 'dict', label: 'Dictionary & Gematria', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
+                { id: 'about', label: 'Reference Archive', icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }
+            ],
+
+            init() {
+                this.renderNav();
+                this.loadData();
+                this.setTab('calls');
+
+                document.getElementById('toggle-audio-btn').addEventListener('click', () => {
+                    const isEnabled = audioEngine.toggle();
+                    const toggleUI = document.getElementById('audio-toggle');
+                    if (isEnabled) {
+                        toggleUI.classList.add('audio-active');
+                        audioEngine.playWhoosh();
+                    } else {
+                        toggleUI.classList.remove('audio-active');
+                    }
+                });
+
+                const fontBtn = document.getElementById('toggle-font-btn');
+                if (fontBtn) fontBtn.addEventListener('click', () => this.toggleScript());
+            },
+
+            toggleScript() {
+                this.state.useEnochianFont = !this.state.useEnochianFont;
+                const toggleUI = document.getElementById('font-toggle');
+                if (toggleUI) toggleUI.classList.toggle('font-active', this.state.useEnochianFont);
+                audioEngine.playClick();
+                this.renderContent(false);
+            },
+
+            set(key, value) {
+                this.state[key] = value;
+                audioEngine.playClick();
+                this.renderContent(false);
+            },
+
+            loadData() {
+                const data = window.EnochianData;
+                const calls = window.ENOCHIAN_CALLS;
+
+                if (!data) console.error('enochian-data.js failed to load.');
+                if (!calls) console.error('enochian-calls.js failed to load.');
+
+                enochianCalls = calls?.calls?.length
+                    ? calls.calls
+                    : [{ number: 1, name: "Data not loaded", enochian: "Check files.", translation: "Data not loaded." }];
+
+                dictionaryDB = (data?.DICTIONARY || []).map(e => ({
+                    word: e.word,
+                    meaning: e.meaning,
+                    v1: e.values[0],
+                    source: e.source.code === 'CALL'
+                        ? `Call ${e.source.call}.${e.source.position}`
+                        : (e.source.code || '—')
+                }));
+
+                tablesData = window.EnochianTables || null;
+                if (!tablesData) console.error('enochian-tables.js failed to load.');
+
+                parsedTablets = (data?.TABLETS?.boards || []).map(b =>
+                    b.grid.map((rowStr, r) =>
+                        [...rowStr].map((l, c) => ({ n: r * 7 + c + 1, l }))
+                    )
+                );
+            },
+
+            setTab(tabId) {
+                this.state.currentTab = tabId;
+                audioEngine.playClick();
+                this.renderNav();
+                this.renderContent();
+            },
+
+            renderNav() {
+                const nav = document.getElementById('main-nav');
+                nav.innerHTML = this.tabs.map(tab => `
+                <button onclick="App.setTab('${tab.id}')" class="tab-btn w-full text-left px-4 md:px-6 py-3 md:py-4 flex items-center gap-4 text-gray-400 hover:text-solarGold hover:bg-white/5 transition-all outline-none ${this.state.currentTab === tab.id ? 'active' : ''}">
+                    <svg class="w-5 h-5 stroke-current fill-none flex-shrink-0" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="${tab.icon}"/></svg>
+                    <span class="font-serif tracking-wider text-xs md:text-sm uppercase hidden md:block">${tab.label}</span>
+                </button>
+            `).join('');
+            },
+
+            renderContent(animate = true) {
+                speech.stop();
+                const container = document.getElementById('main-container');
+                container.innerHTML = '';
+                container.classList.add('animate-fade-in');
+
+                if (leafletMap) {
+                    leafletMap.remove();
+                    leafletMap = null;
+                }
+
+                if (animate) {
+                    container.style.animation = 'none';
+                    container.offsetHeight; /* trigger reflow */
+                    container.style.animation = null;
+                } else {
+                    container.style.animation = 'none';
+                }
+
+                switch (this.state.currentTab) {
+                    case 'calls': container.innerHTML = this.viewCalls(); break;
+                    case 'map':
+                        container.innerHTML = this.viewMap();
+                        setTimeout(() => this.initMap(), 100);
+                        break;
+                    case 'table': container.innerHTML = this.viewTable(); break;
+                    case 'tablets': container.innerHTML = this.viewTablets(); break;
+                    case 'lamen': container.innerHTML = this.viewLamen(); break;
+                    case 'ensign': container.innerHTML = this.viewEnsign(); break;
+                    case 'dict': container.innerHTML = this.viewDictionary(); break;
+                    case 'about': container.innerHTML = this.viewAbout(); break;
+                }
+            },
+
+            currentCall() {
+                return enochianCalls.find(c => c.number === this.state.currentCallId) || enochianCalls[0];
+            },
+
+            toggleRecite() {
+                if (speech.speaking) {
+                    speech.stop();
+                } else {
+                    speech.speak(this.currentCall().translation, () => this.updateReciteButton());
+                }
+                this.updateReciteButton();
+            },
+
+            updateReciteButton() {
+                const btn = document.getElementById('recite-btn');
+                if (!btn) return;
+                btn.innerHTML = speech.speaking ? this.reciteLabel(true) : this.reciteLabel(false);
+            },
+
+            reciteLabel(isSpeaking) {
+                return isSpeaking
+                    ? `<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg> Stop`
+                    : `<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Recite`;
+            },
+
+            viewCalls() {
+                const call = this.currentCall();
+                const wordCount = call.enochian_word_count || call.enochian.split(' ').length;
+
+                return `
+                <div class="max-w-4xl mx-auto">
+                    <header class="flex justify-between items-end border-b border-solarGold/20 pb-4 mb-8">
+                        <div>
+                            <h2 class="text-3xl font-serif text-solarGold tracking-widest uppercase">The Enochian Calls</h2>
+                            <p class="text-gray-400 text-sm mt-2 font-serif">Select an invocation to view its geometry and phonetic translation.</p>
+                        </div>
+                        <select id="call-selector" onchange="App.state.currentCallId = parseInt(this.value); App.renderContent();" class="bg-obsidian border border-solarGold/30 text-solarGold font-serif py-2 px-4 rounded outline-none focus:border-solarGold">
+                            ${enochianCalls.map(c => `<option value="${c.number}" ${c.number === call.number ? 'selected' : ''}>${c.name}</option>`).join('')}
+                        </select>
+                    </header>
+
+                    <div class="panel-bg border border-solarGold/10 rounded-xl p-8 relative overflow-hidden shadow-2xl mb-6">
+                        <div class="absolute -right-20 -top-20 opacity-5 pointer-events-none">
+                            <svg viewBox="0 0 200 200" class="w-96 h-96 stroke-solarGold fill-none"><circle cx="100" cy="100" r="90" stroke-width="2"/><circle cx="100" cy="100" r="80" stroke-dasharray="5,5"/><polygon points="100,10 186.6,145 13.4,145" stroke-width="1"/></svg>
+                        </div>
+
+                        <div class="mb-4 flex justify-between items-center z-10 relative">
+                            <div class="flex flex-col">
+                                <span class="text-xs text-aethyrSapphire tracking-widest uppercase">${wordCount} Words</span>
+                                ${call.direction_or_angle ? `<span class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">${call.direction_or_angle}</span>` : ''}
+                            </div>
+                            <button id="recite-btn" onclick="App.toggleRecite()" ${speech.supported ? '' : 'disabled title="Speech is not supported in this browser"'} class="flex items-center gap-2 text-solarGold hover:text-white border border-solarGold/30 hover:border-solarGold px-4 py-1.5 rounded-full transition-all text-xs font-serif tracking-widest uppercase disabled:opacity-40 disabled:cursor-not-allowed">
+                                ${App.reciteLabel(false)}
+                            </button>
+                        </div>
+
+                        <div class="bg-obsidian/50 rounded-lg p-6 mb-6 border border-white/5 min-h-[120px] text-center leading-relaxed flex flex-wrap justify-center items-center text-solarGold ${this.state.useEnochianFont ? 'font-enochian text-4xl tracking-normal' : 'font-serif text-xl tracking-[0.2em] uppercase'}">
+                            ${this.state.useEnochianFont ? call.enochian.toLowerCase() : call.enochian}
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-8 z-10 relative">
+                            <div>
+                                <h3 class="text-xs uppercase tracking-widest text-gray-500 mb-2 border-b border-gray-800 pb-1">Enochian / Phonetic</h3>
+                                <p class="font-serif text-gray-300 leading-relaxed text-sm">${call.enochian}</p>
+                            </div>
+                            <div>
+                                <h3 class="text-xs uppercase tracking-widest text-gray-500 mb-2 border-b border-gray-800 pb-1">English Translation</h3>
+                                <p class="font-serif text-solarGold leading-relaxed text-sm opacity-90">${call.translation}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            },
+
+            // ---------- World Map Module ----------
+            viewMap() {
+                return `
+                <div class="max-w-6xl mx-auto flex flex-col h-[calc(100vh-6rem)]">
+                    <header class="border-b border-solarGold/20 pb-4 mb-6 flex-shrink-0">
+                        <h2 class="text-3xl font-serif text-solarGold tracking-widest uppercase">The 91 Governors</h2>
+                        <p class="text-gray-400 text-sm mt-2 font-serif">Locate nearest esoteric regions based on geographic proximity.</p>
+                    </header>
+                    <div class="grid md:grid-cols-12 gap-6 flex-1 min-h-0">
+                        <!-- Sidebar for Location -->
+                        <div class="md:col-span-4 panel-bg border border-solarGold/10 rounded-xl p-6 shadow-xl flex flex-col gap-5 h-full overflow-y-auto">
+                            <!-- 1:1 Aspect Ratio Top Image -->
+                            <div class="hidden md:block">
+                                <img src="earth.jpeg" alt="Global Projection" class="w-full object-cover rounded-lg border border-solarGold/30" style="aspect-ratio: 1 / 1;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                <div class="hidden flex-col items-center justify-center text-center p-6 gap-2 border border-solarGold/20 rounded-lg aspect-square bg-black/40">
+                                    <span class="text-[10px] uppercase tracking-widest text-gray-500 font-serif">Image not found</span>
+                                    <code class="text-xs text-solarGold">earth.jpeg</code>
+                                </div>
+                            </div>
+
+                            <div class="relative">
+                                <div class="text-[10px] uppercase tracking-widest text-aethyrSapphire font-serif mb-2">Initialize Scanner</div>
+                                <input type="text" id="city-input" placeholder="Enter City (e.g., London, Tokyo)..." class="w-full bg-obsidian border border-white/10 rounded px-4 py-3 text-white text-sm focus:outline-none focus:border-solarGold transition-colors mb-3" autocomplete="off">
+                                <div id="autocomplete-results" class="autocomplete-dropdown hidden"></div>
+                                
+                                <button onclick="App.findNearestEnochianFromInput()" class="w-full bg-solarGold/10 text-solarGold border border-solarGold/40 hover:bg-solarGold/20 py-2.5 rounded uppercase tracking-widest text-xs font-serif transition-colors mt-2">
+                                    Analyze Location
+                                </button>
+                                <div id="map-loading" class="hidden text-center text-[10px] text-gray-400 font-serif uppercase tracking-widest mt-3 animate-pulse">Calculating Proximity...</div>
+                            </div>
+                            
+                            <div id="map-results" class="mt-4 flex-1">
+                                <!-- Results populate here -->
+                            </div>
+                        </div>
+
+                        <!-- Map Display -->
+                        <div class="md:col-span-8 panel-bg border border-solarGold/10 rounded-xl p-2 shadow-xl h-[400px] md:h-full">
+                            <div id="map-container"></div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            initMap() {
+                // Initialize Leaflet Map
+                leafletMap = L.map('map-container').setView([20, 0], 2);
+
+                L.maplibreGL({
+                    style: 'https://tiles.openfreemap.org/styles/positron',
+                    attribution: '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> ' +
+                        '&copy; <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> ' +
+                        'Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
+                }).addTo(leafletMap);
+
+                // Add markers for all Governor locations
+                if (window.EnochianWorld && window.EnochianWorld.entries) {
+                    window.EnochianWorld.entries.forEach(entry => {
+                        if (entry.sites && entry.sites.length > 0) {
+                            entry.sites.forEach(site => {
+                                const [lat, lon, radius] = site;
+                                const marker = L.circleMarker([lat, lon], {
+                                    color: '#D4AF37',
+                                    fillColor: '#2A6F97',
+                                    fillOpacity: 0.5,
+                                    radius: 6,
+                                    weight: 1
+                                }).addTo(leafletMap);
+
+                                marker.bindPopup(`
+                                    <div class="font-serif">
+                                        <h4 class="text-solarGold tracking-widest uppercase border-b border-solarGold/20 mb-1 pb-1">${entry.governor}</h4>
+                                        <p class="text-xs text-gray-300">${entry.place}</p>
+                                        <p class="text-[10px] text-gray-400 mt-1">Aethyr: ${entry.aethyr}</p>
+                                    </div>
+                                `);
+
+                                mapMarkers.push({
+                                    entry: entry,
+                                    marker: marker,
+                                    lat: lat,
+                                    lon: lon,
+                                    radius: radius
+                                });
+                            });
+                        }
+                    });
+                }
+
+                // Autocomplete setup
+                const cityInput = document.getElementById('city-input');
+                const dropdown = document.getElementById('autocomplete-results');
+                let timeout = null;
+
+                cityInput.addEventListener('input', function () {
+                    clearTimeout(timeout);
+                    const query = this.value.trim();
+
+                    if (query.length < 3) {
+                        dropdown.classList.add('hidden');
+                        return;
+                    }
+
+                    timeout = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`);
+                            const data = await res.json();
+
+                            if (data.length > 0) {
+                                dropdown.innerHTML = data.map(item => `
+                                    <div class="autocomplete-item" 
+                                         onclick="App.selectLocation(${item.lat}, ${item.lon}, '${item.display_name.replace(/'/g, "\\'")}')">
+                                        ${item.display_name}
+                                    </div>
+                                `).join('');
+                                dropdown.classList.remove('hidden');
+                            } else {
+                                dropdown.classList.add('hidden');
+                            }
+                        } catch (e) {
+                            console.error("Autocomplete error:", e);
+                        }
+                    }, 500);
+                });
+
+                // Hide dropdown when clicking outside
+                document.addEventListener('click', function (e) {
+                    if (e.target !== cityInput && e.target !== dropdown) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+
+                // Allow enter key submission
+                cityInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        dropdown.classList.add('hidden');
+                        App.findNearestEnochianFromInput();
+                    }
+                });
+            },
+
+            selectLocation(lat, lon, displayName) {
+                document.getElementById('city-input').value = displayName;
+                document.getElementById('autocomplete-results').classList.add('hidden');
+                this.processLocation(lat, lon, displayName);
+            },
+
+            async findNearestEnochianFromInput() {
+                const city = document.getElementById('city-input').value.trim();
+                const loadingDiv = document.getElementById('map-loading');
+                const resultsDiv = document.getElementById('map-results');
+
+                if (!city) return;
+
+                if (!window.EnochianWorld) {
+                    resultsDiv.innerHTML = '<div class="flex items-center justify-center text-red-400 font-serif text-sm tracking-widest uppercase">Error: enochian-worldmap.js not loaded.</div>';
+                    return;
+                }
+
+                loadingDiv.classList.remove('hidden');
+                resultsDiv.innerHTML = '';
+                audioEngine.playClick();
+
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(city)}`);
+                    const data = await response.json();
+
+                    if (data.length === 0) {
+                        resultsDiv.innerHTML = `<div class="flex flex-col items-center justify-center text-gray-500 font-serif text-sm tracking-widest uppercase p-4"><span class="text-2xl mb-2">∅</span> Coordinates not found.</div>`;
+                        loadingDiv.classList.add('hidden');
+                        return;
+                    }
+
+                    this.processLocation(parseFloat(data[0].lat), parseFloat(data[0].lon), data[0].display_name);
+                } catch (err) {
+                    resultsDiv.innerHTML = `<div class="flex items-center justify-center text-red-400 font-serif text-sm tracking-widest uppercase p-4">Connection error.</div>`;
+                    loadingDiv.classList.add('hidden');
+                }
+            },
+
+            processLocation(userLat, userLon, userDisplay) {
+                const loadingDiv = document.getElementById('map-loading');
+                const resultsDiv = document.getElementById('map-results');
+
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                audioEngine.playClick();
+
+                // Zoom map to the location
+                if (leafletMap) {
+                    // Fly to the new location
+                    leafletMap.flyTo([userLat, userLon], 5, { duration: 1.5 });
+
+                    // Add a temporary marker for the user's searched city
+                    const userIcon = L.divIcon({
+                        className: 'custom-user-marker',
+                        html: `<svg class="w-6 h-6 stroke-enochianCrimson fill-none animate-pulse-slow" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 7.2c0 7.3-8 11.8-8 11.8z" />
+                                <circle cx="12" cy="9.2" r="2.5" stroke-width="2"/>
+                               </svg>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 24]
+                    });
+
+                    // Remove previous user marker if it exists
+                    if (this.userMarker) {
+                        leafletMap.removeLayer(this.userMarker);
+                    }
+
+                    this.userMarker = L.marker([userLat, userLon], { icon: userIcon })
+                        .addTo(leafletMap)
+                        .bindPopup(`<div class="font-serif text-xs">Origin: ${userDisplay.split(',')[0]}</div>`)
+                        .openPopup();
+                }
+
+                const getDist = (lat1, lon1, lat2, lon2) => {
+                    const R = 6371;
+                    const dLat = (lat2 - lat1) * Math.PI / 180;
+                    const dLon = (lon2 - lon1) * Math.PI / 180;
+                    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                };
+
+                let nearest = null;
+                let minDistance = Infinity;
+                let targetMarker = null;
+
+                window.EnochianWorld.entries.forEach(entry => {
+                    if (entry.sites && entry.sites.length > 0) {
+                        entry.sites.forEach(site => {
+                            const [siteLat, siteLon, radius] = site;
+                            const rawDist = getDist(userLat, userLon, siteLat, siteLon);
+                            const effDist = Math.max(0, rawDist - radius);
+                            if (effDist < minDistance) {
+                                minDistance = effDist;
+                                nearest = { entry, distance: Math.round(rawDist), effDist: Math.round(effDist) };
+
+                                // Find corresponding map marker
+                                targetMarker = mapMarkers.find(m =>
+                                    m.lat === siteLat && m.lon === siteLon && m.entry.governor === entry.governor
+                                );
+                            }
+                        });
+                    }
+                });
+
+                if (nearest) {
+                    const e = nearest.entry;
+                    const aethyrInfo = window.EnochianWorld.aethyrs.find(a => a.name === e.aethyr) || { total: 'Unknown' };
+
+                    // Highlight the target marker
+                    if (targetMarker && targetMarker.marker) {
+                        setTimeout(() => {
+                            targetMarker.marker.openPopup();
+                            // Optional: draw a line from user to target
+                            if (this.connectionLine) leafletMap.removeLayer(this.connectionLine);
+                            this.connectionLine = L.polyline([
+                                [userLat, userLon],
+                                [targetMarker.lat, targetMarker.lon]
+                            ], {
+                                color: '#C93B2B',
+                                weight: 2,
+                                opacity: 0.6,
+                                dashArray: '5, 10'
+                            }).addTo(leafletMap);
+                        }, 1600); // wait for flyTo to mostly finish
+                    }
+
+                    resultsDiv.innerHTML = `
+                    <div class="animate-fade-in flex flex-col gap-4">
+                        <div class="bg-black/30 p-4 rounded border border-white/5">
+                            <h3 class="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-1">Geospatial Target</h3>
+                            <p class="font-serif text-gray-300 text-xs truncate" title="${userDisplay}">${userDisplay.split(',')[0]} <span class="text-[9px] text-aethyrSapphire tracking-widest ml-2">${userLat.toFixed(2)}°, ${userLon.toFixed(2)}°</span></p>
+                        </div>
+                        
+                        <div class="bg-black/20 p-4 rounded-lg border border-solarGold/30">
+                            <h3 class="text-[10px] uppercase tracking-[0.2em] text-solarGold mb-3 border-b border-solarGold/20 pb-1">Primary Resonating Governor</h3>
+                            
+                            <div class="flex justify-between items-end mb-4">
+                                <div>
+                                    <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Governor</div>
+                                    <div class="font-serif text-2xl text-solarGold tracking-widest glow-gold">${e.governor}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Aethyr</div>
+                                    <div class="font-serif text-xl text-solarGold tracking-widest">${e.order}. ${e.aethyr}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Location</div>
+                                    <div class="font-serif text-gray-200 tracking-wider truncate">${e.place}</div>
+                                </div>
+                                <div>
+                                    <div class="text-[9px] text-gray-500 uppercase tracking-widest mb-1">Proximity</div>
+                                    <div class="font-serif text-aethyrSapphire">${nearest.distance} km</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-2 border-b border-gray-800 pb-1">Command Matrix</h3>
+                            <ul class="space-y-1.5 font-serif text-xs">
+                                <li class="flex justify-between items-center bg-black/40 px-3 py-2 border border-white/5 rounded">
+                                    <span class="text-[9px] text-gray-400 uppercase tracking-widest">Ruling Angel</span> 
+                                    <span class="text-gray-200">${e.angel} (No. ${e.angelNo})</span>
+                                </li>
+                                <li class="flex justify-between items-center bg-black/40 px-3 py-2 border border-white/5 rounded">
+                                    <span class="text-[9px] text-gray-400 uppercase tracking-widest">Quarter</span> 
+                                    <span class="text-gray-200">${e.tribe} / ${e.quarter || e.direction}</span>
+                                </li>
+                                <li class="flex justify-between items-center bg-black/40 px-3 py-2 border border-white/5 rounded">
+                                    <span class="text-[9px] text-gray-400 uppercase tracking-widest">Good Ministers</span> 
+                                    <span class="text-gray-200">${e.ministers}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    `;
+                }
+            },
+            // ---------- End World Map Module ----------
+
+            subTabs(key, options) {
+                return `<div class="flex flex-wrap gap-2">` + options.map(o => `
+                <button onclick="App.set('${key}', '${o.id}')" class="px-4 py-2 rounded-full border text-xs font-serif tracking-widest uppercase transition-all ${this.state[key] === o.id ? 'border-solarGold text-solarGold bg-solarGold/10' : 'border-white/10 text-gray-400 hover:text-solarGold hover:border-solarGold/40'}">${o.label}</button>`).join('') + `</div>`;
+            },
+
+            scriptToggle() {
+                const on = this.state.useEnochianFont;
+                return `
+                <button onclick="App.toggleScript()" class="flex items-center gap-3 outline-none" title="Switch between alphabet and Enochian script">
+                    <span class="text-[10px] uppercase tracking-widest font-serif ${on ? 'text-gray-500' : 'text-solarGold'}">Alphabet</span>
+                    <span class="w-10 h-5 rounded-full relative border bg-obsidian ${on ? 'border-solarGold' : 'border-gray-600'}">
+                        <span class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform ${on ? 'translate-x-5 bg-solarGold' : 'bg-gray-500'}"></span>
+                    </span>
+                    <span class="text-[10px] uppercase tracking-widest font-serif ${on ? 'text-solarGold' : 'text-gray-500'}">Enochian</span>
+                </button>`;
+            },
+
+            imageFrame(src, alt) {
+                return `
+                <div class="relative w-full mx-auto rounded-lg overflow-hidden border border-solarGold/20 bg-black/40" style="aspect-ratio: 1 / 1; max-width: 520px;">
+                    <img src="${src}" alt="${alt}" class="absolute inset-0 w-full h-full object-contain" onerror="App.imgMissing(this)">
+                    <div class="absolute inset-0 flex-col items-center justify-center text-center p-6 gap-2" style="display:none;">
+                        <svg class="w-10 h-10 stroke-gray-600 fill-none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4-4 4 4 4-6 4 6M4 4h16v16H4z"/></svg>
+                        <span class="text-[10px] uppercase tracking-widest text-gray-500 font-serif">Image not found</span>
+                        <code class="text-xs text-solarGold">${src}</code>
+                    </div>
+                </div>`;
+            },
+
+            imgMissing(img) {
+                img.style.display = 'none';
+                const note = img.nextElementSibling;
+                if (note) note.style.display = 'flex';
+            },
+
+            missingData(file) {
+                return `<div class="max-w-xl mx-auto mt-16 text-center font-serif text-gray-400">Could not load <code class="text-solarGold">${file}</code>. Make sure it sits in the same folder as this HTML file.</div>`;
+            },
+
+            viewTable() {
+                if (!tablesData) return this.missingData('enochian-tables.js');
+                const variants = tablesData.greatTable;
+                const v = variants[this.state.tableVariant] || variants.recensa;
+                const sel = this.state.selectedQuadrant;
+                const enoch = this.state.useEnochianFont;
+                const glyph = c => !c || c === '_' ? '' : (enoch ? c.toLowerCase() : c);
+                const cellClass = enoch ? 'gt-cell enoch' : 'gt-cell';
+
+                const quad = q => {
+                    const el = v.layout[q];
+                    const pal = tablesData.palette[q];
+                    let cells = '';
+                    v.tablets[el].forEach((row, r) => {
+                        [...row].forEach((c, ci) => {
+                            const region = r === 6 ? 'MID' : (r < 6 ? 'T' : 'B') + (ci < 6 ? 'L' : 'R');
+                            cells += `<div class="${cellClass}" style="color:${pal[region]}">${glyph(c)}</div>`;
+                        });
+                    });
+                    return `<div class="gt-quad ${sel === q ? 'selected' : ''}" style="background:${pal.bg}" onclick="App.set('selectedQuadrant', '${q}')" title="${ELEMENT_NAMES[el]} Watchtower">${cells}</div>`;
+                };
+                const cross = arr => `<div class="gt-cross">${arr.map(c => `<div class="${cellClass}">${glyph(c)}</div>`).join('')}</div>`;
+                const bar = [...v.bar.left, '_', ...v.bar.right].map(c => `<div class="${cellClass}">${glyph(c)}</div>`).join('');
+
+                const aethyrs = tablesData.aethyrs.map((name, i) => `
+                    <div class="border border-white/5 bg-black/30 rounded-lg py-2 px-1 text-center hover:border-solarGold/40 transition-colors">
+                        <div class="text-[9px] text-gray-500 font-sans">${i + 1}</div>
+                        <div class="text-solarGold ${enoch ? 'font-enochian text-2xl leading-tight' : 'font-serif text-sm tracking-widest'}">${enoch ? name.toLowerCase() : name}</div>
+                        ${enoch ? `<div class="text-[9px] font-serif text-gray-600 tracking-widest">${name}</div>` : ''}
+                    </div>`).join('');
+
+                return `
+                <div class="max-w-6xl mx-auto">
+                    <header class="border-b border-solarGold/20 pb-4 mb-6">
+                        <h2 class="text-3xl font-serif text-solarGold tracking-widest uppercase">The Great Table</h2>
+                        <p class="text-gray-400 text-sm mt-2 font-serif">${v.title} of ${v.year} &middot; The Four Elemental Watchtowers. Select a tablet to read its hierarchy.</p>
+                    </header>
+
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        ${this.subTabs('tableVariant', [{ id: 'recensa', label: 'Tabula Recensa (1857)' }, { id: 'dee1584', label: 'The Great Table (1584)' }])}
+                        ${this.scriptToggle()}
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+                        <div class="xl:col-span-3 panel-bg border border-solarGold/10 rounded-xl p-4 md:p-6 shadow-xl">
+                            <h3 class="text-center font-beaulieux text-2xl text-solarGold tracking-widest mb-4">${v.title}</h3>
+                            <div class="gt-wrap">
+                                <div class="gt-grid">
+                                    ${quad('tl')}${cross(v.crossTop)}${quad('tr')}
+                                    <div class="gt-bar">${bar}</div>
+                                    ${quad('bl')}${cross(v.crossBottom)}${quad('br')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="inspector-panel" class="xl:col-span-2 panel-bg border border-solarGold/10 rounded-xl p-6 shadow-xl xl:max-h-[80vh] overflow-y-auto">
+                            ${sel ? this.generateInspectorHTML(v.layout[sel], sel) : '<p class="text-sm font-serif text-gray-500 uppercase tracking-widest text-center">Select a Watchtower to analyze hierarchy.</p>'}
+                        </div>
+                    </div>
+
+                    <section class="panel-bg border border-solarGold/10 rounded-xl p-6 shadow-xl mt-6">
+                        <h3 class="text-sm uppercase tracking-widest text-gray-400 mb-4 border-b border-white/5 pb-2 font-serif">The 30 Aethyrs</h3>
+                        <div class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2">${aethyrs}</div>
+                    </section>
+                </div>
+            `;
+            },
+
+            generateInspectorHTML(el, quadrant) {
+                const w = tablesData.watchtowers[el];
+                const label = (t) => `<div class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">${t}</div>`;
+                const names = list => `<ul class="grid grid-cols-2 gap-2">${list.map(n => `<li class="text-sm font-serif text-gray-300 bg-black/40 px-2 py-1 rounded border border-white/5 tracking-wider">${n}</li>`).join('')}</ul>`;
+                const pairs = list => `<ul class="space-y-1">${list.map(([name, note]) => `
+                    <li class="flex flex-wrap items-baseline justify-between gap-x-3 bg-black/40 px-2 py-1 rounded border border-white/5">
+                        <span class="text-sm font-serif text-gray-200 tracking-wider">${name}</span>
+                        <span class="text-[10px] uppercase tracking-widest text-gray-500">${note}</span>
+                    </li>`).join('')}</ul>`;
+                const lineas = [['Linea Patris', w.seniors.patris], ['Linea Filii', w.seniors.filii], ['Linea Spiritus Sancti', w.seniors.spiritus]];
+
+                return `
+                <div class="w-full text-left animate-fade-in">
+                    <h3 class="text-xl font-serif uppercase tracking-widest border-b border-white/10 pb-2 mb-5" style="color:${w.color}">${w.name} <span class="text-xs text-gray-500">(${QUAD_DIRECTIONS[quadrant]})</span></h3>
+
+                    <div class="space-y-6">
+                        <div>
+                            ${label('The Three Holy Names of God')}
+                            <div class="font-serif text-lg tracking-widest text-white glow-sapphire">${w.holy}</div>
+                        </div>
+                        <div>
+                            ${label('Great Elemental King')}
+                            <div class="font-serif text-md tracking-widest text-solarGold">${w.king}</div>
+                        </div>
+                        ${lineas.map(([title, list]) => `
+                        <div>
+                            ${label(`Seniors of the ${title} in the Tablet of ${w.name}`)}
+                            ${names(list)}
+                        </div>`).join('')}
+                        <div>
+                            ${label('Names of the Kerubic Angels')}
+                            ${pairs(w.kerubic)}
+                        </div>
+                        <div>
+                            ${label('Powers of the Lesser Angle')}
+                            ${pairs(w.powers)}
+                        </div>
+                        <div>
+                            ${label('Names which compel the evoked forces to obedience')}
+                            ${pairs(w.compel)}
+                        </div>
+                    </div>
+                </div>
+            `;
+            },
+
+            viewTablets() {
+                const generateTabletGrid = () => {
+                    if (!parsedTablets || parsedTablets.length === 0) return '';
+                    const tablet = parsedTablets[App.state.currentTablet] || [];
+                    let gridHtml = '';
+
+                    tablet.forEach(row => {
+                        row.forEach(cell => {
+                            const l = cell.l;
+                            const displayChar = App.state.useEnochianFont
+                                ? `<span class="font-enochian text-3xl text-solarGold opacity-70 group-hover:opacity-100 transition-opacity">${l.toLowerCase()}</span>`
+                                : `<span class="text-solarGold font-serif text-xl opacity-70 group-hover:opacity-100 transition-opacity">${l}</span>`;
+
+                            gridHtml += `
+                            <div class="aspect-square border border-solarGold/20 flex items-center justify-center bg-obsidian/50 hover:bg-solarGold/10 cursor-pointer transition-colors group relative" title="Cell: ${cell.n}">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    ${displayChar}
+                                </div>
+                                <span class="text-[10px] font-serif text-gray-600 absolute bottom-0.5 right-1 opacity-100 group-hover:opacity-0 transition-opacity uppercase">${l}</span>
+                                <span class="text-[9px] font-sans text-gray-500 absolute top-0.5 left-1 opacity-0 group-hover:opacity-100 transition-opacity">${cell.n}</span>
+                            </div>
+                        `;
+                        });
+                    });
+                    return gridHtml;
+                };
+
+                return `
+                <div class="max-w-6xl mx-auto h-full flex flex-col">
+                    <header class="border-b border-solarGold/20 pb-4 mb-6">
+                        <h2 class="text-3xl font-serif text-solarGold tracking-widest uppercase">Tabula Bonorum & Sacred Geometry</h2>
+                        <p class="text-gray-400 text-sm mt-2 font-serif">The 49 Good Angels and Esoteric Diagrams.</p>
+                    </header>
+
+                    <div class="mb-6">${this.subTabs('tabletsView', [{ id: 'creation', label: 'Tablets of Creation' }, { id: 'bonorum', label: 'Tabula Bonorum' }])}</div>
+
+                    ${this.state.tabletsView === 'bonorum' ? this.bonorumPanel() : `<div class="grid md:grid-cols-2 gap-8 items-start">
+                        <!-- Tablets Viewer -->
+                        <div class="panel-bg border border-solarGold/10 rounded-xl p-6 shadow-xl">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-sm uppercase tracking-widest text-gray-400">Tablet of Creation</h3>
+                                <select onchange="App.state.currentTablet = this.selectedIndex; App.renderContent(); audioEngine.playClick();" class="bg-obsidian border border-solarGold/30 text-solarGold text-xs uppercase tracking-widest py-1 px-2 outline-none">
+                                    ${parsedTablets.map((_, i) => `<option ${App.state.currentTablet === i ? 'selected' : ''}>Tablet ${i + 1}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-7 gap-1 p-2 bg-black/50 rounded-lg border border-white/5">
+                                ${generateTabletGrid()}
+                            </div>
+                        </div>
+
+                        <!-- Diagram Viewer -->
+                        <div class="panel-bg border border-solarGold/10 rounded-xl p-6 shadow-xl flex flex-col items-center justify-center min-h-[400px]">
+                            <h3 class="text-sm uppercase tracking-widest text-gray-400 mb-6 w-full text-center border-b border-white/5 pb-2">Sigillum Dei Aemeth</h3>
+                            <div class="relative w-full flex flex-col items-center pt-4 pb-6" style="max-width: 320px;">
+                                <img src="sigillumdeiaemeth.png" alt="Sigillum Dei Aemeth" class="sigil-float w-full h-auto object-contain" onerror="App.imgMissing(this)">
+                                <div class="flex-col items-center justify-center text-center p-6 gap-2" style="display:none;">
+                                    <span class="text-[10px] uppercase tracking-widest text-gray-500 font-serif">Image not found</span>
+                                    <code class="text-xs text-solarGold">sigillumdeiaemeth.png</code>
+                                </div>
+                                <div class="sigil-shadow mt-6 h-3 w-2/3 rounded-full bg-black/70 blur-md"></div>
+                            </div>
+                        </div>
+                    </div>`}
+                </div>
+            `;
+            },
+
+            bonorumPanel() {
+                return `
+                <div class="panel-bg border border-solarGold/10 rounded-xl p-6 shadow-xl flex flex-col items-center">
+                    <h3 class="text-sm uppercase tracking-widest text-gray-400 mb-6 w-full text-center border-b border-white/5 pb-2">Tabula Bonorum</h3>
+                    <div class="relative w-full bg-white rounded-lg p-2 shadow-inner" style="max-width: 560px; aspect-ratio: 1 / 1;">
+                        <img src="tabula-bonorum.jpeg" alt="Tabula Bonorum" class="absolute inset-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)] object-contain" onerror="App.imgMissing(this)">
+                        <div class="absolute inset-0 flex-col items-center justify-center text-center p-6 gap-2" style="display:none;">
+                            <span class="text-[10px] uppercase tracking-widest text-gray-500 font-serif">Image not found</span>
+                            <code class="text-xs text-gray-700">tabula-bonorum.jpeg</code>
+                        </div>
+                    </div>
+                </div>`;
+            },
+
+            viewLamen() {
+                if (!tablesData) return this.missingData('enochian-tables.js');
+                const heptarchic = this.state.lamenView === 'heptarchic';
+                return `
+                <div class="max-w-4xl mx-auto">
+                    <header class="border-b border-solarGold/20 pb-4 mb-6">
+                        <h2 class="text-3xl font-serif text-solarGold tracking-widest uppercase">The Lamen</h2>
+                        <p class="text-gray-400 text-sm mt-2 font-serif">${heptarchic ? 'The Heptarchic Lamen, redrawn so its letters can be shown in the alphabet or in Enochian script.' : 'The Original Lamen.'}</p>
+                    </header>
+
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        ${this.subTabs('lamenView', [{ id: 'heptarchic', label: 'Heptarchic Lamen' }, { id: 'original', label: 'Original Lamen' }])}
+                        ${heptarchic ? this.scriptToggle() : ''}
+                    </div>
+
+                    <div class="panel-bg border border-solarGold/10 rounded-xl p-4 md:p-8 shadow-xl">
+                        ${heptarchic
+                        ? `<h3 class="text-center font-beaulieux text-3xl text-solarGold tracking-widest mb-6">Heptarchic Lamen</h3>${this.lamenSVG()}`
+                        : this.imageFrame('original-lamen.jpeg', 'Original Lamen')}
+                    </div>
+                </div>
+            `;
+            },
+
+            lamenSVG() {
+                const L = tablesData.lamen;
+                const enoch = this.state.useEnochianFont;
+                const fontFamily = enoch ? "'Enochian', sans-serif" : "'Inter', sans-serif";
+                const size = enoch ? 30 : 22;
+                const weight = enoch ? 400 : 400;
+                const letter = (x, y, ch) => `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${enoch ? ch.toLowerCase() : ch}</text>`;
+                const cx = col => L.ox + L.u * col;
+                const cy = row => L.oy + L.u * row;
+                const side = L.u * 8;
+                const adv = 17;
+
+                let cells = '', letters = '';
+                L.gridRows.forEach(r => {
+                    [...r.letters].forEach((ch, i) => {
+                        const col = r.col + i;
+                        cells += `<rect x="${cx(col)}" y="${cy(r.row)}" width="${L.u}" height="${L.u}"/>`;
+                        letters += letter(cx(col + 0.5), cy(r.row + 0.5), ch);
+                    });
+                });
+                L.points.forEach(p => { letters += letter(cx(p.col), cy(p.row), p.ch); });
+
+                L.labels.forEach(lb => {
+                    const offsets = [];
+                    let pos = 0;
+                    [...lb.t].forEach(ch => { if (ch === ' ') { pos += 9; } else { offsets.push([ch, pos]); pos += adv; } });
+                    const width = offsets[offsets.length - 1][1];
+                    const start = lb.a === 'start' ? lb.x + 8 : lb.a === 'end' ? lb.x - 8 - width : lb.x - width / 2;
+                    offsets.forEach(([ch, off]) => { letters += letter(start + off, lb.y, ch); });
+                });
+
+                const top = [cx(4), cy(0)], right = [cx(8), cy(4)], bottom = [cx(4), cy(8)], left = [cx(0), cy(4)];
+                return `
+                <svg viewBox="0 0 ${L.w} ${L.h}" class="w-full h-auto mx-auto" style="max-width: 560px; display:block;" role="img" aria-label="Heptarchic Lamen">
+                    <g fill="none" stroke="#D4AF37" stroke-opacity="0.55" stroke-width="1">
+                        <rect x="1" y="1" width="${L.w - 2}" height="${L.h - 2}"/>
+                        <rect x="${L.ox}" y="${L.oy}" width="${side}" height="${side}"/>
+                        <polygon points="${top} ${right} ${bottom} ${left}"/>
+                    </g>
+                    <g fill="none" stroke="#D4AF37" stroke-opacity="0.45" stroke-width="1">${cells}</g>
+                    <g fill="#F1E6B8" font-family="${fontFamily}" font-size="${size}" font-weight="${weight}">${letters}</g>
+                </svg>`;
+            },
+
+            viewEnsign() {
+                if (!tablesData) return this.missingData('enochian-tables.js');
+                const planets = tablesData.planets;
+                const current = planets.find(p => p.id === this.state.currentPlanet) || planets[0];
+                return `
+                <div class="max-w-4xl mx-auto">
+                    <header class="border-b border-solarGold/20 pb-4 mb-6">
+                        <h2 class="text-3xl font-serif text-solarGold tracking-widest uppercase">The Ensigns</h2>
+                        <p class="text-gray-400 text-sm mt-2 font-serif">Choose a planetary symbol to view its Ensign.</p>
+                    </header>
+
+                    <div class="grid grid-cols-7 gap-2 md:gap-3 mb-8">
+                        ${planets.map(p => `
+                        <button onclick="App.set('currentPlanet', '${p.id}')" title="${p.name}" class="flex flex-col items-center gap-1 py-3 rounded-xl border transition-all outline-none ${p.id === current.id ? 'border-solarGold bg-solarGold/10 text-solarGold' : 'border-white/10 text-gray-400 hover:text-solarGold hover:border-solarGold/40'}">
+                            <span class="symbol-font text-3xl md:text-4xl leading-none">${p.symbol}</span>
+                            <span class="hidden md:block text-[10px] font-serif uppercase tracking-widest">${p.name}</span>
+                        </button>`).join('')}
+                    </div>
+
+                    <div class="panel-bg border border-solarGold/10 rounded-xl p-4 md:p-8 shadow-xl">
+                        <h3 class="text-center font-serif text-xl text-solarGold tracking-[0.3em] uppercase mb-6">
+                            <span class="symbol-font mr-2">${current.symbol}</span>${current.name}
+                        </h3>
+                        ${this.imageFrame(current.file, current.name + ' Ensign')}
+                    </div>
+                </div>
+            `;
+            },
+
+            viewDictionary() {
+                setTimeout(() => {
+                    const input = document.getElementById('dict-search');
+                    const calcInput = document.getElementById('gematria-input');
+
+                    if (input) input.addEventListener('input', (e) => this.filterDictionary(e.target.value));
+                    if (calcInput) calcInput.addEventListener('input', (e) => {
+                        const val = calculateGematria(e.target.value);
+                        document.getElementById('gematria-result').innerText = val;
+                    });
+                }, 0);
+
+                return `
+                <div class="max-w-6xl mx-auto flex flex-col h-[calc(100vh-6rem)]">
+                    <header class="border-b border-solarGold/20 pb-4 mb-6 flex-shrink-0 flex justify-between items-end">
+                        <div>
+                            <h2 class="text-3xl font-serif text-solarGold tracking-widest uppercase">Lexicon & Gematria</h2>
+                            <p class="text-gray-400 text-sm mt-2 font-serif">Concordance based on enochian-data.js (${dictionaryDB.length} records).</p>
+                        </div>
+                    </header>
+
+                    <div class="grid md:grid-cols-3 gap-6 flex-1 min-h-0">
+                        
+                        <div class="md:col-span-1 flex flex-col gap-6">
+                            <div class="panel-bg border border-solarGold/10 rounded-xl p-6 shadow-xl">
+                                <h3 class="text-xs uppercase tracking-widest text-aethyrSapphire mb-4 font-serif">Live Gematria Calculator</h3>
+                                <input type="text" id="gematria-input" placeholder="Enter word..." class="w-full bg-obsidian border border-white/10 rounded px-4 py-2 text-white font-serif uppercase tracking-widest focus:outline-none focus:border-solarGold transition-colors mb-4">
+                                <div class="flex justify-between items-end border-t border-white/5 pt-4">
+                                    <span class="text-xs text-gray-500 uppercase tracking-widest">Numeric Value</span>
+                                    <span id="gematria-result" class="text-3xl font-serif text-solarGold glow-gold">0</span>
+                                </div>
+                            </div>
+
+                            <div class="panel-bg border border-solarGold/10 rounded-xl p-6 shadow-xl flex-1">
+                                <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-4 font-serif">Search Database</h3>
+                                <input type="text" id="dict-search" placeholder="Type meaning or word..." class="w-full bg-obsidian border border-white/10 rounded px-4 py-2 text-white text-sm focus:outline-none focus:border-solarGold transition-colors mb-4">
+                                <p class="text-[10px] text-gray-600 leading-relaxed">
+                                    Filters the dictionary records mapping Enochian words to English definitions and standard gematria valuations.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2 panel-bg border border-solarGold/10 rounded-xl flex flex-col shadow-xl overflow-hidden min-h-[400px]">
+                            <div class="bg-black/50 border-b border-white/5 px-6 py-3 flex text-xs font-serif uppercase tracking-widest text-gray-500">
+                                <div class="w-1/3">Word</div>
+                                <div class="w-1/2">Meaning</div>
+                                <div class="w-1/6 text-right">Value</div>
+                            </div>
+                            <div id="dict-results" class="flex-1 overflow-y-auto p-2">
+                                ${this.renderDictionaryRows(dictionaryDB.slice(0, 150))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            },
+
+            filterDictionary(query) {
+                const q = query.toLowerCase();
+                const filtered = dictionaryDB.filter(d =>
+                    d.word.toLowerCase().includes(q) ||
+                    d.meaning.toLowerCase().includes(q) ||
+                    d.v1.toString() === q
+                );
+                document.getElementById('dict-results').innerHTML = this.renderDictionaryRows(filtered.slice(0, 150));
+            },
+
+            renderDictionaryRows(data) {
+                if (data.length === 0) return `<div class="p-8 text-center text-gray-600 text-sm font-serif italic">No records match your query.</div>`;
+                return data.map(d => `
+                <div class="flex items-center px-4 py-3 border-b border-white/5 hover:bg-white/5 transition-colors cursor-default">
+                    <div class="w-1/3">
+                        <div class="font-serif text-solarGold tracking-widest">${d.word}</div>
+                        <div class="text-[9px] text-gray-600 uppercase mt-1">Source: ${d.source}</div>
+                    </div>
+                    <div class="w-1/2 text-sm text-gray-300 font-serif pr-4 leading-snug">${d.meaning}</div>
+                    <div class="w-1/6 text-right font-serif text-aethyrSapphire text-lg">${d.v1}</div>
+                </div>
+            `).join('');
+            },
+
+            viewAbout() {
+                return `
+                <div class="max-w-3xl mx-auto py-12">
+                    <div class="text-center mb-12">
+                        <svg viewBox="0 0 100 100" class="w-24 h-24 mx-auto stroke-solarGold fill-transparent mb-6 opacity-80">
+                            <circle cx="50" cy="50" r="48" stroke-width="1"/>
+                            <circle cx="50" cy="50" r="40" stroke-dasharray="2,4" stroke-width="2"/>
+                            <path d="M 50 10 L 85 75 L 15 75 Z" stroke-width="1"/>
+                            <path d="M 50 90 L 15 25 L 85 25 Z" stroke-width="1"/>
+                        </svg>
+                        <h2 class="text-4xl font-beaulieux text-solarGold tracking-[0.3em] uppercase glow-gold">Enochian</h2>
+                        <h3 class="text-sm font-kartka text-gray-400 tracking-widest uppercase mt-4">A Symbolic Representation of the Universe</h3>
+                    </div>
+
+                    <div class="panel-bg border border-solarGold/20 rounded-xl p-8 shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-solarGold to-transparent opacity-50"></div>
+                        
+                        <div class="space-y-6 font-serif text-gray-300 text-sm leading-relaxed text-justify">
+                            <p><span class="text-solarGold text-xl drop-cap float-left mr-2 line-height-[1] mt-1">T</span>his application is a modern, single-page architectural re-engineering of the classic Visual Basic 6 software suite designed to preserve and explore the profound esoteric frameworks recorded by Dr. John Dee and Sir Edward Kelley between 1582 and 1589.</p>
+                            
+                            <p>It acts as a digital interactive grimoire, meticulously structuring the <strong>19 Angelic Keys (Calls)</strong>, mapping the multi-dimensional cartography of the <strong>Great Table of the Watchtowers</strong>, and providing a dynamic interface to the intricate matrix of the <strong>VII Tablets of Creation (Tabula Bonorum)</strong>.</p>
+                            
+                            <div class="border-l-2 border-aethyrSapphire pl-4 my-8">
+                                <p class="italic text-gray-400">"Can the wings of the winds understand your voices of wonder? O you the second of the First, whom the burning flames have framed within the depth of my Jaws..."</p>
+                                <p class="text-[10px] uppercase tracking-widest text-gray-600 mt-2">— The Second Key</p>
+                            </div>
+
+                            <p>The internal Dictionary & Concordance runs on data compiled from the original fixed-length <code>ROWEDIC.DAT</code> and <code>TABLETS.DAT</code> files (now <code>enochian-data.js</code>), calculating real-time standard Gematria valuations to uncover synchromystic numerical links between the Angelic language and English manifestations.</p>
+                        </div>
+
+                        <div class="mt-10 text-center">
+                            <div class="text-[10px] uppercase tracking-[0.3em] text-gray-500">Created by</div>
+                            <div class="font-serif text-lg tracking-widest text-solarGold mt-1">Michael W.P. Wenas</div>
+                            <a href="https://michaelwenas.biz.id" target="_blank" rel="noopener noreferrer" class="inline-block mt-1 text-xs tracking-wider text-aethyrSapphire hover:text-solarGold transition-colors">michaelwenas.biz.id</a>
+                        </div>
+
+                                                <div class="mt-12 pt-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-gray-500 uppercase tracking-widest">
+                            <div>System Architecture: HTML5 / Canvas / Web Audio API</div>
+                            <div class="text-solarGold">Version 2.0 (ES2022 Compilation)</div>
+                        </div>
+
+                        <div class="mt-8 pt-6 border-t border-white/5 flex flex-col items-center text-center gap-3">
+                            <img src="copyfarleft.png" alt="Copyfarleft" class="h-12 w-auto object-contain opacity-90" onerror="App.imgMissing(this)">
+                            <div class="flex-col items-center text-center gap-1" style="display:none;">
+                                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-serif">Image not found</span>
+                                <code class="text-xs text-solarGold">copyfarleft.png</code>
+                            </div>
+                            <div class="text-[10px] uppercase tracking-[0.3em] text-gray-500">Licensed under Copyfarleft</div>
+                            <p class="max-w-xl text-[11px] text-gray-500 font-serif leading-relaxed normal-case tracking-normal">
+                                Copyfarleft is a licensing approach that keeps a work free for workers, cooperatives, and the commons to use, modify, and share, while restricting commercial exploitation by those who profit from others' labor without contributing back.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            App.init();
+        });
+    </script>
+</body>
+
+</html>
