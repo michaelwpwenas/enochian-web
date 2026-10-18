@@ -265,7 +265,7 @@ window.EnochianTables = {
     { id: 'venus', name: 'Venus', symbol: '\u2640\uFE0E', file: 'venus.jpeg' },
     { id: 'sol', name: 'Sol', symbol: '\u2609', file: 'sol.jpeg' },
     { id: 'mars', name: 'Mars', symbol: '\u2642\uFE0E', file: 'mars.jpeg' },
-    { id: 'jupiter', name: 'Jupiter', symbol: '\u2643', file: 'Jupiter.jpeg' },
+    { id: 'jupiter', name: 'Jupiter', symbol: '\u2643', file: 'jupiter.jpeg' },
     { id: 'mercury', name: 'Mercury', symbol: '\u263F\uFE0E', file: 'mercury.jpeg' },
     { id: 'saturn', name: 'Saturn', symbol: '\u2644', file: 'saturn.jpeg' },
     { id: 'luna', name: 'Luna', symbol: '\u263D', file: 'luna.jpeg' }
